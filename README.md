@@ -4,6 +4,6 @@
 To run:
 
 1. Download the code
-2. run pip install -r requirements.txt
+2. pip install -r requirements.txt
 3. flask run
 4. Navigate to http://127.0.0.1:5000/
