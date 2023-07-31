@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vulnerabilities</title>
+    <link href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row mb-3">
+            <div class="col-3">
+                <button id="btnRaw100" class="btn btn-primary btn-block">Show Raw 100 Entries</button>
+            </div>
+            <div class="col-3">
+                <button id="btnRaw1000" class="btn btn-primary btn-block">Show Raw 1000 Entries</button>
+            </div>
+            <div class="col-3">
+                <button id="btn100" class="btn btn-primary btn-block">Calculate & Sort 100 Entries</button>
+            </div>
+            <div class="col-3">
+                <button id="btn1000" class="btn btn-primary btn-block">Calculate & Sort 1000 Entries</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <h2 class="text-center mb-3" id="executionTime" style="color: #007bff"></h2>
+            </div>
+        </div>
+        </div>
+                <div id="tableWrapper" style="width: 80%; padding-left: 5%;">
+                <table id="dataTable" class="table table-striped table-bordered" style="width:80%">
+                    
+                 <thead>
+                <tr>
+                    <th>GUID</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>CVSS3.0</th>
+                    <th>Network Zone</th>
+                    <th>Exploit Code Maturity</th>
+                    <th>Actively Exploited</th>
+                    <th>Patch Available</th>
+                    <th>Dark Web References</th>
+                    <th>Risk Score</th>
+                    <th>Risk Severity</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+</div>
+
+        <script>
+            $(document).ready(function() {
+                var table = $('#dataTable').DataTable({ 
+                    scrollX: false,
+                    ordering: false,
+                    pageLength: 100,
+                    columnDefs: [
+                        { width: "30%", targets: 2},
+                        { width: "30%", targets: 9}
+                    ] 
+                });
+                
+                $('#btn100, #btn1000').click(function() {
+                        var entries = $(this).text() === 'Calculate & Sort 100 Entries' ? 100 : 1000;
+
+                        $.ajax({
+                            url: '/calculate_and_sort',
+                            method: 'POST',
+                            contentType: 'application/json',
+                            data: JSON.stringify({ entries: entries }),
+                            success: function(response) {
+                                table.clear();
+                                response.data.forEach(function(row) {
+                                    table.row.add([row['GUID'], row['Name'], row['Description'], row['CVSS3.0'], row['Network Zone'], row['Exploit Code Maturity'], row['Actively Exploited'], row['Patch Available'], row['Dark Web References'], row['Risk Score'], row['Risk Severity']]);
+                                });
+                                table.draw();
+                                $('#executionTime').text('Execution time: ' + response.execution_time.toFixed(10) + ' seconds');
+                            }
+                        });
+                    });
+            
+                $('#btnRaw100, #btnRaw1000').click(function() {
+                    var entries = $(this).text() === 'Show Raw 100 Entries' ? 100 : 1000;
+            
+                    $.ajax({
+                        url: '/get_raw_data',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ entries: entries }),
+                        success: function(data) {
+                            table.clear();
+                            data.forEach(function(row) {
+                                table.row.add([row['GUID'], row['Name'], row['Description'], row['CVSS3.0'], row['Network Zone'], row['Exploit Code Maturity'], row['Actively Exploited'], row['Patch Available'], row['Dark Web References'], row['Risk Score'], row['Risk Severity']]);
+                            });
+                            table.draw();
+                        }
+                    });
+                });
+            });
+        </script>
+            
+    </body>
+</html>
